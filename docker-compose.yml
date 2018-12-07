@@ -53,23 +53,6 @@ services:
     ports:
       - "6379:6379"
 
-  rabbitmq:
-    image: rabbitmq:3.7.6-management
-    container_name: dnmp-rabbitmq
-    hostname: rabbit
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    volumes:
-      - ./conf/rabbitmq.cnf:/etc/rabbitmq/rabbitmq.cnf:ro
-      - ./rabbitmq/:/var/lib/rabbitmq/:rw
-      - ./log/:/var/log/dnmp/:rw      
-    networks:
-      - net-rabbit
-    environment:
-      RABBITMQ_DEFAULT_USER: "user"
-      RABBITMQ_DEFAULT_PASS: "123456" 
-
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:6.5.1
     container_name: elasticsearch
@@ -77,6 +60,8 @@ services:
       - cluster.name=wufly
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - http.cors.enabled=true
+      - "http.cors.allow-origin=*"
     ulimits:
       memlock:
         soft: -1
@@ -95,12 +80,21 @@ services:
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
       - "discovery.zen.ping.unicast.hosts=elasticsearch"
+      - http.cors.enabled=true
+      - "http.cors.allow-origin=*"
     ulimits:
       memlock:
         soft: -1
         hard: -1
     volumes:
       - esdata2:/usr/share/elasticsearch/data
+    networks:
+      - net-esnet
+  elasticsearch-head:
+    image: wallbase/elasticsearch-head:6-alpine
+    container_name: elasticsearch-head
+    ports:
+      - '9100:9100'
     networks:
       - net-esnet
 
